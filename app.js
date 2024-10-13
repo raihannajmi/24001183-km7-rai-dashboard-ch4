@@ -1,3 +1,4 @@
+const morgan = require("morgan");
 const express = require("express");
 const usersRoute = require("./routes/usersRoute");
 const carsRoute = require("./routes/carsRoute");
@@ -9,6 +10,23 @@ const port = 3000;
 
 // Reading json from body (client)
 app.use(express.json());
+
+// logging || third party package
+app.use(morgan());
+
+// contoh middleware yang dibuat sendiri
+app.use((req, res, next) => {
+  console.log("incoming request ....");
+  // better logging dibawahnya
+  next();
+});
+
+// logging basic
+app.use((req, res, next) => {
+  req.requestTime = new Date().toISOString();
+  // better logging dibawahnya
+  next();
+});
 
 // Health Check
 app.get("/", async (req, res) => {

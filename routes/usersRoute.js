@@ -21,4 +21,6 @@ router.patch("/:id", userController.UpdateUserById);
 // API for create new user data
 router.post("/", upload.single("photo"), userController.createUser);
 
+router.post("/bulk-images", upload.array("photos"), userController.createUser);
+
 module.exports = router;

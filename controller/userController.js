@@ -126,28 +126,34 @@ async function UpdateUserById(req, res) {
 
 async function createUser(req, res) {
   const file = req.file;
-  console.log(file);
-  const split = file.originalname.split(".");
 
-  const ext = split[split.lenght - 1];
-
-  const uploadedImage = await imagekit.upload({
-    file: file.buffer,
-    fileName: `Profile-${Date.now()}.${ext}`,
-  });
-
-  if (!uploadedImage) {
-    return res.status(404).json({
+  if (!files || files.length === 0) {
+    return res.status(400).json({
       status: "Failed",
-      message: "Can't find spesific id user",
+      message: "No files uploaded",
       isSuccess: false,
       data: null,
     });
   }
-  const newUser = req.body;
 
   try {
-    await User.create({ ...newUser, photoProfile: uploadedImage.url });
+    const uploadedImages = await Promise.all(
+      files.map(async (file) => {
+        const split = file.originalname.split(".");
+        const ext = split[split.length - 1];
+
+        const uploadedImage = await imagekit.upload({
+          file: file.buffer,
+          fileName: `Profile-${Date.now()}.${ext}`,
+        });
+
+        return uploadedImage.url;
+      })
+    );
+
+    const newUser = req.body;
+
+    await User.create({ ...newUser, photoProfiles: uploadedImages });
 
     res.status(200).json({
       status: "Success",

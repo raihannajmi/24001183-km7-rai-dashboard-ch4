@@ -8,7 +8,6 @@ const multerFiltering = (req, file, cb) => {
   ) {
     cb(null, true);
   } else {
-    console.log("wahyu");
     throw new Error("image format is not valid");
   }
 };

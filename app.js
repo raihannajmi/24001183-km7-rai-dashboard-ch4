@@ -4,12 +4,15 @@ const usersRoute = require("./routes/usersRoute");
 const carsRoute = require("./routes/carsRoute");
 const sparepartsRoute = require("./routes/sparepartsRoute");
 const driverRoutes = require("./routes/driverRoute");
+const dashboardRoutes = require("./routes/dashboardRoute");
 
 const app = express();
 const port = 3000;
 
 // Reading json from body (client)
 app.use(express.json());
+// middleware : agar dari form kebaca
+app.use(express.urlencoded({ extended: false }));
 
 // logging || third party package
 app.use(morgan());
@@ -26,6 +29,20 @@ app.use((req, res, next) => {
   req.requestTime = new Date().toISOString();
   // better logging dibawahnya
   next();
+});
+
+// middleware : bisa membuat express application kita membuat static file
+app.use(express.static(`${__dirname}/public`));
+
+// panggil view engine
+app.set("view engine", "ejs");
+
+app.get("/dashboard/admin", async (req, res) => {
+  try {
+    res.render("index", { greeting: "hello fsw 2" });
+  } catch (error) {
+    console.log(error);
+  }
 });
 
 // Health Check
@@ -45,6 +62,9 @@ app.get("/", async (req, res) => {
     });
   }
 });
+
+// Dashboard Route
+app.use("/dashboard/admin", dashboardRoutes);
 
 // Routes
 app.use("/api/v1/users", usersRoute);

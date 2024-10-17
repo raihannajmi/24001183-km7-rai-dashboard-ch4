@@ -5,8 +5,10 @@ const imagekit = require("../libs/imagekit");
 async function userPage(req, res) {
   try {
     const users = await User.findAll();
+    console.log(users.data);
 
     res.render("users/index", {
+      title: "user page",
       users,
     });
   } catch (error) {
@@ -120,7 +122,7 @@ async function UpdateUserById(req, res) {
 
 async function createPage(req, res) {
   try {
-    res.render("users/create");
+    res.render("users/create", { title: "create page" });
   } catch (error) {
     res.status(500).json({
       status: "Failed",
@@ -133,10 +135,30 @@ async function createPage(req, res) {
 }
 
 async function createUser(req, res) {
-  const file = req.file;
+  const files = req.file;
+  const newUser = req.body;
+  console.log("files", files);
+  let uploadedImages = null;
 
   try {
-    const newUser = req.body;
+    if (files) {
+      uploadedImages = await Promise.all(
+        files.map(async (file) => {
+          const split = file.originalname.split(".");
+          const ext = split[split.length - 1];
+
+          const uploadedImage = await imagekit.upload({
+            file: file.buffer,
+            fileName: `Profile-${Date.now()}.${ext}`,
+          });
+
+          return uploadedImage.url;
+        })
+      );
+
+      await User.create({ ...newUser, uploadedImages });
+      res.redirect("/dashboard/admin/users");
+    }
 
     await User.create({ ...newUser });
     res.redirect("/dashboard/admin/users");
